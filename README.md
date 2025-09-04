@@ -1,1 +1,256 @@
-# Abreme
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>abreme</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    :root{
+      --verde:#00ff6a;
+      --rojo:#ff3131;
+    }
+    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+    html,body{
+      height:100%;
+      margin:0;
+      padding:0;
+    }
+    body{
+      background:#000;
+      color:#fff;
+      font-family: ui-monospace, monospace;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) 
+               env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* Pantalla inicial */
+    #pantalla-inicial {
+      position:fixed;
+      inset:0;
+      background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      z-index:10;
+    }
+    #pantalla-inicial button {
+      background:#111;
+      color:#fff;
+      border:1px solid #555;
+      padding:12px 26px;
+      font-size:20px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:all .25s;
+    }
+    #pantalla-inicial button:active {
+      background:#222;
+    }
+
+    /* Calavera de fondo */
+    #skull{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+      opacity:.08;
+    }
+    #skull svg{
+      width:min(70vmin,720px);
+      height:auto;
+    }
+
+    /* Contenido */
+    .wrap{
+      position:relative;
+      z-index:2;
+      text-align:center;
+      padding:24px;
+      display:none;
+    }
+    #mensaje-inicial{
+      font-size:clamp(16px, 3.5vmin, 28px);
+      color:#bbb;
+      margin-bottom:12px;
+    }
+    #contador{
+      font-size:clamp(36px, 9vmin, 80px);
+      color:var(--verde);
+      font-weight:600;
+      letter-spacing:.02em;
+      min-height:1em;
+      animation: parpadeo 1s infinite alternate;
+    }
+    #mensaje-final{
+      display:none;
+      margin-top:18px;
+      font-size:clamp(24px, 6vmin, 48px);
+      color:var(--rojo);
+      font-weight:600;
+      text-transform:uppercase;
+      animation: parpadeoRojo 0.3s infinite, vibrar 0.2s infinite;
+    }
+
+    /* Panel inferior */
+    #panel{
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background:rgba(20,20,20,0.95);
+      border-top:2px solid #222;
+      padding:12px;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      z-index:3;
+    }
+    #panel span{
+      color:#fff;
+      margin-right:8px;
+    }
+    button{
+      background:#111;
+      color:#fff;
+      border:1px solid #555;
+      padding:6px 16px;
+      font-size:16px;
+      border-radius:6px;
+      cursor:pointer;
+      transition:all .3s ease;
+    }
+    button:active{
+      background:#222;
+    }
+    #btn-si{
+      position:relative;
+    }
+
+    /* Animaciones */
+    @keyframes parpadeo {
+      from{opacity:1;}
+      to{opacity:0.3;}
+    }
+    @keyframes parpadeoRojo {
+      0%,100%{opacity:1;}
+      50%{opacity:0;}
+    }
+    @keyframes vibrar {
+      0%{transform:translate(0);}
+      20%{transform:translate(-3px,2px);}
+      40%{transform:translate(3px,-2px);}
+      60%{transform:translate(-2px,3px);}
+      80%{transform:translate(2px,-3px);}
+      100%{transform:translate(0);}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pantalla inicial -->
+  <div id="pantalla-inicial">
+    <button id="btn-iniciar">Continuar</button>
+  </div>
+
+  <!-- Calavera SVG (fondo) -->
+  <div id="skull" aria-hidden="true">
+    <svg viewBox="0 0 200 240" role="img">
+      <g fill="#ffffff">
+        <circle cx="100" cy="85" r="75"/>
+        <rect x="55" y="140" width="90" height="70" rx="22" ry="22"/>
+      </g>
+      <g fill="#000000">
+        <circle cx="70" cy="85" r="18"/>
+        <circle cx="130" cy="85" r="18"/>
+        <path d="M100 110 L85 130 L115 130 Z"/>
+        <rect x="78" y="172" width="6" height="18"/>
+        <rect x="96" y="172" width="6" height="18"/>
+        <rect x="114" y="172" width="6" height="18"/>
+      </g>
+      <g fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="4">
+        <circle cx="100" cy="85" r="75"/>
+        <rect x="55" y="140" width="90" height="70" rx="22" ry="22"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="wrap" id="contenido">
+    <div id="mensaje-inicial">Iniciando receteo completo...</div>
+    <div id="contador"></div>
+    <div id="mensaje-final">TE ASUSTASTE PENDEJO? JAJAJJAJAJA</div>
+  </div>
+
+  <!-- Panel inferior -->
+  <div id="panel">
+    <span>Cancelar reseteo:</span>
+    <button id="btn-si">Sí</button>
+    <button id="btn-no">No</button>
+  </div>
+
+  <script>
+    const pantallaInicial = document.getElementById('pantalla-inicial');
+    const btnIniciar      = document.getElementById('btn-iniciar');
+    const contenido       = document.getElementById('contenido');
+    const mensajeInicial  = document.getElementById('mensaje-inicial');
+    const contadorEl      = document.getElementById('contador');
+    const mensajeFinal    = document.getElementById('mensaje-final');
+    const panel           = document.getElementById('panel');
+    const btnSi           = document.getElementById('btn-si');
+    const btnNo           = document.getElementById('btn-no');
+
+    let porcentaje = 10;
+
+    // Inicio en iPhone: mostrar contenido
+    btnIniciar.addEventListener('click', () => {
+      pantallaInicial.style.display = \"none\";
+      contenido.style.display = \"block\";
+      panel.style.display = \"flex\";
+      iniciarConteo();
+    });
+
+    // Conteo de 10 a 1
+    function iniciarConteo() {
+      function tick() {
+        if (porcentaje > 0) {
+          contadorEl.textContent = porcentaje + \"%\";
+          porcentaje--;
+          setTimeout(tick, 1000);
+        } else {
+          mensajeInicial.style.display = 'none';
+          contadorEl.style.display = 'none';
+        }
+      }
+      tick();
+    }
+
+    // Botón \"Sí\" se mueve (soporte táctil y mouse)
+    function moverBoton() {
+      const maxX = window.innerWidth - btnSi.offsetWidth - 40;
+      const maxY = window.innerHeight - btnSi.offsetHeight - 40;
+      const x = Math.floor(Math.random() * maxX);
+      const y = Math.floor(Math.random() * maxY);
+      btnSi.style.position = \"fixed\";
+      btnSi.style.left = x + \"px\";
+      btnSi.style.top = y + \"px\";
+    }
+    btnSi.addEventListener('mouseover', moverBoton);
+    btnSi.addEventListener('touchstart', moverBoton);
+
+    // Botón \"No\" muestra mensaje final
+    btnNo.addEventListener('click', () => {
+      panel.style.display = 'none';
+      mensajeFinal.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
